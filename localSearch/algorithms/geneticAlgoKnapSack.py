@@ -80,38 +80,49 @@ def mutate(chromosome, mutations):
             chromosome[mutationPoint] = 1
     return chromosome
 
-def generation_replacement(items,capacity, generations, childrenPerGen,mutations):
+def generation_replacement(items, capacity, generations, childrenPerGen, mutations):
+    # Generate initial parents
     parent1 = generateChromosome(items)
-    fitnessP1 = fitness(parent1, items, capacity)
     parent2 = generateChromosome(items)
-    fitnessP2 = fitness(parent2, items, capacity)
-    for gen in range(1,generations+1):
+
+    # Track generational best
+    generationalBest = parent1 if fitness(parent1, items, capacity) >= fitness(parent2, items, capacity) else parent2
+
+    for gen in range(1, generations + 1):
         minHeap = []
-        children = crossingOver(parent1,parent2,childrenPerGen,mutations)
-        for child in children :
-            fitnessOfChild = fitness(child, items, capacity)
-            pushTuple = (-fitnessOfChild,child)
-            heapq.heappush(minHeap,pushTuple)
+        children = crossingOver(parent1, parent2, childrenPerGen, mutations)
+
+        # Evaluate children and push to max-heap
+        for child in children:
+            f = fitness(child, items, capacity)
+            heapq.heappush(minHeap, (-f, child))  # max-heap
+
+        # Include parents for elitism
+        heapq.heappush(minHeap, (-fitness(parent1, items, capacity), parent1))
+        heapq.heappush(minHeap, (-fitness(parent2, items, capacity), parent2))
+
+        # Select next generation parents (top 2 fittest)
         p1 = heapq.heappop(minHeap)
-        parent1 = p1[1]
-        fitnessP1 = p1[0]
         p2 = heapq.heappop(minHeap)
+        parent1 = p1[1]
         parent2 = p2[1]
-        fitnessP2 = p2[0]
-        print(f"Fittest of the generation {gen}: ")
-        print(parent1)
-        print(f"Score : {-fitnessP1}")
-        print(parent2)
-        print(f"Score : {-fitnessP2}")
-    bestSolution = None
-    if -fitnessP1 > -fitnessP2:
-        print(f"Best solution is with fitness : {-fitnessP1}")
-        print(parent1)
-        return parent1
-    else:
-        print(f"Best solution is with fitness : {-fitnessP2}")
-        print(parent2)
-        return parent1
+        fitnessP1 = -p1[0]
+        fitnessP2 = -p2[0]
+
+        print(f"Fittest of generation {gen}:")
+        print(f"Parent1: {parent1}, Score: {fitnessP1}")
+        print(f"Parent2: {parent2}, Score: {fitnessP2}")
+
+        # Update generational best
+        currentBest = parent1 if fitnessP1 >= fitnessP2 else parent2
+        if fitness(currentBest, items, capacity) > fitness(generationalBest, items, capacity):
+            generationalBest = currentBest
+
+    print(f"\nGenerational best solution is with fitness: {fitness(generationalBest, items, capacity)}")
+    print(generationalBest)
+    return generationalBest
+
+
 
 def elitism(items,capacity, generations, childrenPerGen,mutations):
     #to be implemented
