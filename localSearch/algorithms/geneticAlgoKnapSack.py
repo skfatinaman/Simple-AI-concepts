@@ -128,4 +128,4 @@ def elitism(items,capacity, generations, childrenPerGen,mutations):
     #to be implemented
     pass
 
-sol = generation_replacement(items,capacity, 10, 10, 3)
+sol = generation_replacement(items,capacity, 100, 10, 3)
